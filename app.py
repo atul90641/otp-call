@@ -53,7 +53,7 @@ def home():
 def send_otp():
     phone = request.args.get("phone")
     otp = request.args.get("otp")  # Take OTP from user input (MIT App Inventor)
-    
+    phone = "+91" + phone
     if not phone or not otp:
         return jsonify({"error": "Phone number and OTP are required"}), 400
 
