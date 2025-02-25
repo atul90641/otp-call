@@ -62,7 +62,7 @@ def send_otp():
     # TwiML response for the voice call
     twiml_response = f"""
     <Response>
-        <Say language="hi-IN">नमस्ते! आपका ओ.टी.पी {otp_hindi} है। धन्यवाद!</Say>
+        <Say language="hi-IN">नमस्ते! {otp_hindi} रुपए आये हैं| {otp_hindi} रुपए आये हैं| {otp_hindi} रुपए आये हैं| {otp_hindi} रुपए आये हैं| {otp_hindi} रुपए आये हैं| {otp_hindi} रुपए आये हैं|</Say>
     </Response>
     """
 
