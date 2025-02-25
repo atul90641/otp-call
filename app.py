@@ -17,24 +17,62 @@ TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
 client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
 @app.route('/')
+def convert_to_hindi_words(num):
+    ones = ["", "एक", "दो", "तीन", "चार", "पाँच", "छह", "सात", "आठ", "नौ"]
+    tens = ["", "दस", "बीस", "तीस", "चालीस", "पचास", "साठ", "सत्तर", "अस्सी", "नब्बे"]
+    hundreds = ["", "एक सौ", "दो सौ", "तीन सौ", "चार सौ", "पाँच सौ", "छह सौ", "सात सौ", "आठ सौ", "नौ सौ"]
+    
+    num = int(num)
+
+    if num == 0:
+        return "शून्य"
+    
+    parts = []
+    
+    thousand = num // 1000
+    num %= 1000
+    if thousand > 0:
+        parts.append(ones[thousand] + " हजार")
+
+    hundred = num // 100
+    num %= 100
+    if hundred > 0:
+        parts.append(hundreds[hundred])
+
+    if num < 10:
+        parts.append(ones[num])
+    elif num < 100:
+        parts.append(tens[num // 10] + (" " + ones[num % 10] if num % 10 != 0 else ""))
+    
+    return " ".join(filter(None, parts))
+
 def home():
-    return "Twilio OTP API is running!"
+    return "Twilio OTP Voice API (Hindi) is running!"
 
 @app.route('/send-otp', methods=['GET'])
 def send_otp():
     phone = request.args.get("phone")
-    if not phone:
-        return jsonify({"error": "Phone number is required"}), 400
+    otp = request.args.get("otp")  # Take OTP from user input (MIT App Inventor)
+    
+    if not phone or not otp:
+        return jsonify({"error": "Phone number and OTP are required"}), 400
 
-    otp = str(random.randint(1000, 9999))  # Generate a 4-digit OTP
+    otp_hindi = convert_to_hindi_words(otp)  # Convert to Hindi words
 
-    message = client.messages.create(
-        body=f"Your OTP is {otp}",
+    # TwiML response for the voice call
+    twiml_response = f"""
+    <Response>
+        <Say language="hi-IN">नमस्ते! आपका ओ.टी.पी {otp_hindi} है। धन्यवाद!</Say>
+    </Response>
+    """
+
+    call = client.calls.create(
+        twiml=twiml_response,
         from_=TWILIO_PHONE_NUMBER,
         to=phone
     )
 
-    return jsonify({"success": True, "otp": otp, "message_sid": message.sid})
+    return jsonify({"success": True, "otp": otp, "call_sid": call.sid})
 
 if __name__ == "__main__":
     app.run(debug=True)
